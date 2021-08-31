@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
 namespace WebAppRazorPages.Hubs
@@ -12,7 +13,17 @@ namespace WebAppRazorPages.Hubs
     {
         public override Task OnConnectedAsync()
         {
-            Groups.AddToGroupAsync(Context.ConnectionId, Context.User.Identity.Name);
+            HttpContext httpContext = Context.GetHttpContext();
+
+            string receiver = httpContext.Request.Query["userid"];
+            string sender = Context.User.Claims.FirstOrDefault().Value;
+
+            Groups.AddToGroupAsync(Context.ConnectionId, sender);
+            if (!string.IsNullOrEmpty(receiver))
+            {
+                Groups.AddToGroupAsync(Context.ConnectionId, receiver);
+            }
+
             return base.OnConnectedAsync();
         }
 
@@ -23,7 +34,8 @@ namespace WebAppRazorPages.Hubs
 
         public Task SendMessageToGroup(string receiver, string message)
         {
-            return Clients.Group(receiver).SendAsync("ReceiveMessage", Context.User.Identity.Name, message);
+            return Clients.Group(receiver).SendAsync("ReceiveMessage"
+                , Context.User.Identity.Name, message);
         }
     }
 }

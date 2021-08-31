@@ -63,7 +63,7 @@ namespace WebAppRazorPages
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
-                endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<ChatHub>("chathub");
             });
         }
     }
